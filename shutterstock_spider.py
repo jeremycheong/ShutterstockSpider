@@ -25,31 +25,33 @@ class ShutterstockSpider(BaseSpider):
 
 
     def get_image_info(self, image_soup_tag:bs4.element.Tag) -> Dict:
-        image_info_tag = image_soup_tag.find('a').find('img')
-        image_little_src = image_info_tag.get('src')
-        if image_little_src is None:
-            print('image_soup_tag info:\n', image_soup_tag)
-            return None
-        image_little_src_list = image_little_src.split('/')
-        image_url_doman = '/'.join(image_little_src_list[:-1])
+        image_a_tag = image_soup_tag.find('a')
+        href_info_tag = image_a_tag.get('href')
+        # print(image_a_tag)
+        image_href_list = href_info_tag.split('/')[-1].split('-')
+        image_url_pre = 'https://image.shutterstock.com/image-photo/'
+        image_href_list[-2] = '260nw'
+        image_little_name = '-'.join(image_href_list) + '.jpg'
+        image_href_list[-2] = '600w'
+        image_mid_name = '-'.join(image_href_list) + '.jpg'
+        image_little_src = image_url_pre + image_little_name
+        image_mid_src = image_url_pre + image_mid_name
 
-        image_complete_name_list = image_little_src_list[-1].split('-')
-        image_name = image_complete_name_list[-1]
-        image_pre_info = '-'.join(image_complete_name_list[:-2])
-        image_mid_src = '{}/{}-{}-{}'.format(image_url_doman, image_pre_info, '600w', image_name)
+        image_info_tag = image_a_tag.find('img')
+
         image_location_info = '-'.join(image_info_tag.get('alt').lower().replace(',', ' ').split()[:-2])
-        preview_image_url = 'https://image.shutterstock.com/z/' + 'stock-photo-' + image_location_info + '-' + image_name
+        preview_image_url = 'https://image.shutterstock.com/z/' + 'stock-photo-' + image_location_info + '-' + image_href_list[-1] + '.jpg'
         return {'image_little_src': image_little_src,
                 'image_mid_src': image_mid_src,
                 'image_preview_src': preview_image_url}
 
 
     def catch_all_image_url_per_page(self, page_url: str) -> None:
-        image_little_urls = open(os.path.join(self.save_dir, 'image_little_urls.txt'), 'w')
-        image_mid_urls = open(os.path.join(self.save_dir, 'image_mid_urls.txt'), 'w')
-        image_preview_urls = open(os.path.join(self.save_dir, 'image_preview_urls.txt'), 'w')
-        error_soup_tag_info = open(os.path.join(self.save_dir, 'error_soup_info.txt'), 'w')
-        time.sleep(2)
+        image_little_urls = open(os.path.join(self.save_dir, 'image_little_urls.txt'), 'a+')
+        image_mid_urls = open(os.path.join(self.save_dir, 'image_mid_urls.txt'), 'a+')
+        image_preview_urls = open(os.path.join(self.save_dir, 'image_preview_urls.txt'), 'a+')
+        error_soup_tag_info = open(os.path.join(self.save_dir, 'error_soup_info.txt'), 'a+')
+        # time.sleep(2)
         image_soup_tags = self._html_parser(page_url).find_all('div', 'z_h_b900b')
         print('image_soup_tags len: ', len(image_soup_tags))
         for image_soup_tag in (image_soup_tags):
@@ -70,14 +72,14 @@ class ShutterstockSpider(BaseSpider):
 
     def analysis_page(self, key_words:List) -> None:
         page_url = '{}/{}?image_type=photo'.format(self.doman_url, '+'.join(key_words))
-        # page_soup = self._html_parser(page_url)
-        # page_cnt = page_soup.find('div', 'b_aE_c6506').get_text().split()[1]
-        # print('共 %s 页' % page_cnt)
-        self.catch_all_image_url_per_page(page_url)
-        # for page_id in range(1, int(page_cnt) + 1):
-        #     print('catch the page %d image url' % page_id)
-        #     url_per_page = page_url + '&page=' + str(page_id)
-        #     self.catch_all_image_url_per_page(url_per_page)
+        page_soup = self._html_parser(page_url)
+        page_cnt = page_soup.find('div', 'b_aE_c6506').get_text().split()[1]
+        print('共 %s 页' % page_cnt)
+        # self.catch_all_image_url_per_page(page_url)
+        for page_id in range(1, int(page_cnt) + 1):
+            print('catch the page %d image url' % page_id)
+            url_per_page = page_url + '&page=' + str(page_id)
+            self.catch_all_image_url_per_page(url_per_page)
 
 
 def test_analysis():

@@ -43,6 +43,7 @@ class BaseSpider(metaclass=ABCMeta):
             except:
                 print('Request {} failed! wait and try againe...'.format(url))
                 time.sleep(1.5)
+        time.sleep(0.5)
         return soup
 
     def _download_image(self, image_url, save_dir):

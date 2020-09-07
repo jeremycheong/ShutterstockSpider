@@ -3,7 +3,7 @@ import os
 from bs4 import BeautifulSoup
 import time
 from typing import Dict
-
+import random
 from abc import abstractmethod, ABCMeta
 
 
@@ -64,6 +64,6 @@ class BaseSpider(metaclass=ABCMeta):
             for chunk in img_req.iter_content(chunk_size=32):
                 f.write(chunk)
         print('save image: ' +  image_path + " done!")
-        time.sleep(0.1)
+        time.sleep(random.uniform(0.1, 1.5))
 
 

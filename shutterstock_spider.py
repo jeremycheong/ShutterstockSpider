@@ -6,6 +6,7 @@ import os
 import config as cfg
 from tqdm import tqdm
 import time
+import random
 
 
 class ShutterstockSpider(BaseSpider):
@@ -82,16 +83,21 @@ class ShutterstockSpider(BaseSpider):
             self.catch_all_image_url_per_page(url_per_page)
 
 
-def test_analysis():
-    # soup = BeautifulSoup(info_test, features='html.parser')
-    # image_src = 'https://image.shutterstock.com/image-photo/mud-slide-on-coast-village-260nw-790332325.jpg'
-    # image_src_list = image_src.split('/')
-    # print('/'.join(image_src_list[:-1]))
-    image_location = 'mud slide on coast village road montecito, california usa january, 9, 2017'
-    print(image_location.lower().replace(',', ' ').split()[:-2])
+    def download_from_file(self, url_file, save_folder=None):
+        if save_folder is None:
+            save_folder = './download_images'
+        if not os.path.exists(save_folder):
+            os.mkdir(save_folder)
+
+        with open(url_file, 'r') as f:
+            for image_url in f:
+                self._download_image(image_url.strip(), save_folder)
+
 
 if __name__ == '__main__':
-    key_words = ['mudslide', 'mud']
+    # key_words = ['mudslide', 'mud']
     shutterstock_spider = ShutterstockSpider(cfg.domain)
-    shutterstock_spider.analysis_page(key_words)
-    # test_analysis()
+    # shutterstock_spider.analysis_page(key_words)
+    url_file = 'downloads/image_little_urls.txt'
+    save_folder = 'downloads/image_little'
+    shutterstock_spider.download_from_file(url_file, save_folder)

@@ -5,6 +5,7 @@ import time
 from typing import Dict
 import random
 from abc import abstractmethod, ABCMeta
+import wget
 
 
 HEADERS = {
@@ -64,6 +65,21 @@ class BaseSpider(metaclass=ABCMeta):
             for chunk in img_req.iter_content(chunk_size=32):
                 f.write(chunk)
         print('save image: ' +  image_path + " done!")
+        time.sleep(random.uniform(0.1, 1.5))
+
+    def _wget_download_image(self, image_url, save_dir):
+        image_name = self.transform_url_to_name(image_url)
+        image_path = os.path.join(save_dir, image_name)
+        request_ok = False
+        img_req = None
+        while(not request_ok):
+            try:
+                wget.download(image_url, image_path)
+                request_ok = True
+            except:
+                print('get image url: {} failed! wait and try againe...'.format(image_url))
+                time.sleep(1.5)
+        
         time.sleep(random.uniform(0.1, 1.5))
 
 

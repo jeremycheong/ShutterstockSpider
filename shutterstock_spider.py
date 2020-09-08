@@ -91,7 +91,7 @@ class ShutterstockSpider(BaseSpider):
 
         with open(url_file, 'r') as f:
             for image_url in f:
-                self._download_image(image_url.strip(), save_folder)
+                self._wget_download_image(image_url.strip(), save_folder)
 
 
 if __name__ == '__main__':

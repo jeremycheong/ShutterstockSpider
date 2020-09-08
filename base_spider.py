@@ -70,14 +70,22 @@ class BaseSpider(metaclass=ABCMeta):
     def _wget_download_image(self, image_url, save_dir):
         image_name = self.transform_url_to_name(image_url)
         image_path = os.path.join(save_dir, image_name)
+        if os.path.exists(image_path):
+            print('image %s is existed' % image_path)
+            return
+
         request_ok = False
-        img_req = None
+        failed_cnt = 0
         while(not request_ok):
             try:
                 wget.download(image_url, image_path)
                 request_ok = True
             except:
                 print('get image url: {} failed! wait and try againe...'.format(image_url))
+                failed_cnt += 1
+                if failed_cnt > 10:
+                    print('get image url: {} failed! and skip'.format(image_url))
+                    break
                 time.sleep(1.5)
         
         time.sleep(random.uniform(0.1, 1.5))

@@ -7,6 +7,7 @@ import config as cfg
 from tqdm import tqdm
 import time
 import random
+import sys
 
 
 class ShutterstockSpider(BaseSpider):
@@ -90,8 +91,15 @@ class ShutterstockSpider(BaseSpider):
             os.mkdir(save_folder)
 
         with open(url_file, 'r') as f:
-            for image_url in f:
+            lines = f.readlines()
+            total_num = len(lines)
+            curr_cnt = 0
+            for image_url in lines:
+                curr_cnt += 1
                 self._wget_download_image(image_url.strip(), save_folder)
+                print('\tdownload {}/{}'.format(curr_cnt, total_num), end='')
+                sys.stdout.flush()
+        print('Done!')
 
 
 if __name__ == '__main__':

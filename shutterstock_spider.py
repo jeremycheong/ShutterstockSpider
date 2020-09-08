@@ -72,12 +72,14 @@ class ShutterstockSpider(BaseSpider):
         image_preview_urls.close()
 
 
-    def analysis_page(self, key_words:List) -> None:
+    def analysis_page(self, key_words:List, end_page_num = 0) -> None:
         page_url = '{}/{}?image_type=photo'.format(self.doman_url, '+'.join(key_words))
         page_soup = self._html_parser(page_url)
         page_cnt = page_soup.find('div', 'b_aE_c6506').get_text().split()[1]
         print('共 %s 页' % page_cnt)
-        # self.catch_all_image_url_per_page(page_url)
+        if end_page_num > 0 and end_page_num <= page_cnt:
+            page_cnt = end_page_num
+            
         for page_id in range(1, int(page_cnt) + 1):
             print('catch the page %d image url' % page_id)
             url_per_page = page_url + '&page=' + str(page_id)

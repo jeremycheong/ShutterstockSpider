@@ -11,7 +11,7 @@ import sys
 
 
 class ShutterstockSpider(BaseSpider):
-    def __init__(self, doman_url, save_dir=None) -> None:
+    def __init__(self, doman_url, save_dir=None):
         super(ShutterstockSpider, self).__init__()
         if save_dir is None:
             save_dir =  './downloads'
@@ -22,11 +22,14 @@ class ShutterstockSpider(BaseSpider):
         self.doman_url = doman_url
 
 
-    def transform_url_to_name(self, image_url: str) -> str:
+    def transform_url_to_name(self, image_url: str):
         return image_url.split('/')[-1].split('-')[-1]
 
+    def set_save_dir(self, save_dir):
+        self.save_dir = save_dir
 
-    def get_image_info(self, image_soup_tag:bs4.element.Tag) -> Dict:
+
+    def get_image_info(self, image_soup_tag:bs4.element.Tag):
         image_a_tag = image_soup_tag.find('a')
         href_info_tag = image_a_tag.get('href')
         # print(image_a_tag)
@@ -48,7 +51,7 @@ class ShutterstockSpider(BaseSpider):
                 'image_preview_src': preview_image_url}
 
 
-    def catch_all_image_url_per_page(self, page_url: str) -> None:
+    def catch_all_image_url_per_page(self, page_url: str):
         image_little_urls = open(os.path.join(self.save_dir, 'image_little_urls.txt'), 'a+')
         image_mid_urls = open(os.path.join(self.save_dir, 'image_mid_urls.txt'), 'a+')
         image_preview_urls = open(os.path.join(self.save_dir, 'image_preview_urls.txt'), 'a+')
@@ -72,15 +75,20 @@ class ShutterstockSpider(BaseSpider):
         image_preview_urls.close()
 
 
-    def analysis_page(self, key_words:List, end_page_num = 0) -> None:
+    def analysis_page(self, key_words:List, start_page_num = 0, end_page_num = 0):
         page_url = '{}/{}?image_type=photo'.format(self.doman_url, '+'.join(key_words))
         page_soup = self._html_parser(page_url)
-        page_cnt = page_soup.find('div', 'b_aE_c6506').get_text().split()[1]
+        try:
+            page_cnt = page_soup.find('div', 'b_aE_c6506').get_text().split()[1]
+        except: 
+            print('This key word [%s] result is None' % ','.join(key_words))
+            return
         print('共 %s 页' % page_cnt)
+        page_cnt = int(page_cnt.replace(',', ''))
         if end_page_num > 0 and end_page_num <= page_cnt:
             page_cnt = end_page_num
             
-        for page_id in range(1, int(page_cnt) + 1):
+        for page_id in range(start_page_num + 1, page_cnt + 1):
             print('catch the page %d image url' % page_id)
             url_per_page = page_url + '&page=' + str(page_id)
             self.catch_all_image_url_per_page(url_per_page)
